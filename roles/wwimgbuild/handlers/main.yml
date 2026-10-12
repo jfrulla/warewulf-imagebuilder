@@ -26,14 +26,3 @@
 - name: "Build image VNFS ({{ image_name }})"
   ansible.builtin.command: "wwctl image build --force {{ image_name }}"
   changed_when: true
-  notify:
-    - "Ensure image is set in node profile ({{ image_name }})"
-    - Build Warewulf overlays
-
-- name: "Ensure image is set in node profile ({{ image_name }})"
-  ansible.builtin.command: "wwctl profile set -y --image {{ image_name }} {{ image_name }}"
-  changed_when: true
-
-- name: Build Warewulf overlays
-  ansible.builtin.command: "wwctl overlay build"
-  changed_when: true
