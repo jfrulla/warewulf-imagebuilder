@@ -11,7 +11,7 @@ to the node profile of the same name.
 ansible.cfg                       force_handlers=True (required), inventory and roles paths
 inventory/hosts.yml               phony target: ww-control-node in group example_cluster
 inventory/group_vars/example_cluster/
-  warewulf.yml                    warewulf_cluster_name, warewulf_images, archive_dir
+  warewulf.yml                    warewulf_cluster_name, warewulf_images
   images.yml                      variables consumed by the definitions (OS, kernel pin, Warewulf version, ...)
   secrets.yml                     node_root_password_hash (encrypt with ansible-vault before use)
 playbooks/                        deploy_nodes.yml
@@ -40,9 +40,9 @@ exist for each (see [Prerequisites](#prerequisites)).
 ## Build flow
 
 The build is handler-driven: tasks only stage the build context and render the definition,
-and `notify` when something changed. The handler chain then archives the definition, removes
-the old sandbox, runs `apptainer build --sandbox`, imports the result with
-`wwctl image import --force <image>`, runs `wwctl image build`, sets the image on the
+and `notify` when something changed. The handler chain then removes the old sandbox, runs
+`apptainer build --sandbox`, imports the result with `wwctl image import --force <image>`,
+runs `wwctl image build`, sets the image on the
 `<image>` profile, and rebuilds overlays. The chain is flushed at the end of each image so the
 next image can build from the finished sandbox. Unchanged images are skipped unless
 `force=true`. See [`roles/wwimgbuild/README.md`](roles/wwimgbuild/README.md).

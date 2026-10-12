@@ -12,7 +12,6 @@
   loop:
     - "{{ definition_dest_dir }}"
     - "{{ sandbox_build_dir }}"
-    - "{{ archive_dir }}"
     - "{{ build_context_dest }}"
 
 - name: Create build context destination subdirectories
@@ -54,7 +53,7 @@
     group: root
     mode: "0644"
   notify:
-    - "Archive generated image definition ({{ image_name }})"
+    - "Remove previous sandbox build ({{ image_name }})"
 
 - name: Check for force flag
   ansible.builtin.debug:

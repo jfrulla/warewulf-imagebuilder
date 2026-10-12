@@ -6,6 +6,6 @@ exclude_paths:
   - collections/
 
 skip_list:
-  # The role's variables (image_name, force, archive_dir, ...) are deliberately short:
+  # The role's variables (image_name, force, sandbox_build_dir, ...) are deliberately short:
   # they are set from inventory group vars and -e on the command line, not only inside the role.
   - var-naming[no-role-prefix]

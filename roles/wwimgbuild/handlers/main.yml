@@ -3,15 +3,6 @@
 # each handler notifies the next step. ansible.cfg must set force_handlers=True
 # so a failure mid-chain does not leave notified handlers pending.
 
-- name: "Archive generated image definition ({{ image_name }})"
-  ansible.builtin.copy:
-    remote_src: true
-    src: "{{ definition_dest }}"
-    dest: "{{ archive_dest }}"
-    mode: "0644"
-  notify:
-    - "Remove previous sandbox build ({{ image_name }})"
-
 - name: "Remove previous sandbox build ({{ image_name }})"
   ansible.builtin.file:
     path: "{{ sandbox_dest }}"

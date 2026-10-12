@@ -20,6 +20,3 @@ build_context_src_dir: "{{ role_path }}/files/build-context/{{ warewulf_cluster_
 
 # Directory the build-time files are copied to (target side). The definitions reference this path.
 build_context_dest_dir: "/var/tmp/build-context"
-
-# Directory where previously rendered definitions are archived (one copy per build)
-archive_dir: "/var/lib/warewulf/definition-archive"

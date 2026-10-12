@@ -7,6 +7,3 @@ warewulf_images:
   - base
   - user
   - login
-
-# Where previously rendered definition files are archived
-archive_dir: "/var/lib/warewulf/definition-archive"
