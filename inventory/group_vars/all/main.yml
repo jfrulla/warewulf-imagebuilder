@@ -1,0 +1,3 @@
+---
+# Header written into every file rendered from a .j2 template
+ansible_managed: "# This file is managed by Ansible. Do not edit."

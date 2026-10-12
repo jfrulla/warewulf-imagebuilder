@@ -1,0 +1,26 @@
+---
+# Variables consumed by the Apptainer definition templates and build-context templates.
+
+# Rocky Linux major version and the mirror used to bootstrap the base image
+rocky_version: "9"
+rocky_mirror_url: "https://dl.rockylinux.org/pub/rocky/{{ rocky_version }}/BaseOS/x86_64/os/"
+
+# Kernel version to pin inside the image, e.g. "5.14.0-570.12.1.el9_6".
+# Leave empty to install whatever kernel the mirror currently provides.
+kernel_version: ""
+
+# Warewulf release whose warewulf-dracut package is installed in the image.
+# Match this to the Warewulf version running on the control node.
+warewulf_version: "4.7.1"
+warewulf_dracut_rpm_url: >-
+  https://github.com/warewulf/warewulf/releases/download/v{{ warewulf_version }}/warewulf-dracut-{{ warewulf_version }}-1.el{{ rocky_version }}.noarch.rpm
+
+# Label metadata written into every image
+image_maintainer: "Cluster Admins <admins@example.org>"
+
+# Timezone applied to nodes on boot (roles/wwimgbuild/files/build-context/example/base/set-timezone.service.j2)
+cluster_timezone: "UTC"
+
+# user.slice limits applied on login nodes (roles/wwimgbuild/files/build-context/example/login/user-slice-limit.sh.j2)
+login_user_slice_memory_max: "16G"
+login_user_slice_cpu_quota: "400%"

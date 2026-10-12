@@ -1,0 +1,40 @@
+Bootstrap: localimage
+From: {{ sandbox_build_dir }}/user
+
+%labels
+    org.opencontainers.image.title="Rocky {{ rocky_version }} Warewulf login"
+    org.opencontainers.image.description="Bootable image for {{ warewulf_cluster_name }} login nodes"
+    org.opencontainers.image.authors="{{ image_maintainer }}"
+
+%environment
+    export container=oci
+
+%files
+    {{ build_context_dest }}/user-slice-limit.service /etc/systemd/system/
+    {{ build_context_dest }}/user-slice-limit.sh /usr/local/sbin/
+
+%post
+    # Login nodes face users directly: firewall and brute-force protection
+    dnf -y --allowerasing install \
+        firewalld \
+        fail2ban-firewalld \
+        python3-systemd
+
+    chmod 0750 /usr/local/sbin/user-slice-limit.sh
+
+    # Enable services
+    systemctl enable \
+        firewalld \
+        fail2ban \
+        user-slice-limit
+
+    # Clean up
+    dnf clean all
+
+%help
+    Rocky Linux {{ rocky_version }} - Login node Warewulf image for the {{ warewulf_cluster_name }} cluster
+
+    Build:   sudo apptainer build --sandbox /path/to/sandbox login.def
+    Import:  sudo wwctl image import /path/to/sandbox login
+
+    The above steps are performed automatically by the wwimgbuild Ansible role.

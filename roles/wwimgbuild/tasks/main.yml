@@ -1,0 +1,69 @@
+---
+- name: Ensure Apptainer is installed
+  ansible.builtin.dnf:
+    name: apptainer
+    state: present
+
+- name: Create working directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ definition_dest_dir }}"
+    - "{{ sandbox_build_dir }}"
+    - "{{ archive_dir }}"
+    - "{{ build_context_dest }}"
+
+- name: Create build context destination subdirectories
+  ansible.builtin.file:
+    path: "{{ build_context_dest }}/{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode }}"
+  with_community.general.filetree: "{{ build_context_src }}"
+  when: item.state == "directory"
+
+# Files ending in .vault are vault-encrypted whole files; copy decrypts them and strips the suffix.
+- name: Copy regular and encrypted build context files
+  ansible.builtin.copy:
+    src: "{{ item.src }}"
+    dest: "{{ build_context_dest }}/{{ item.path | regex_replace('\\.vault$', '') }}"
+    mode: "{{ item.mode }}"
+    local_follow: true
+  with_community.general.filetree: "{{ build_context_src }}"
+  when: (item.state == "file" or item.state == "link") and not (item.path | regex_search('\\.j2$'))
+  notify:
+    - "Remove previous sandbox build ({{ image_name }})"
+
+# Files ending in .j2 are rendered by Ansible at build time with the suffix stripped.
+- name: Generate templated build context files
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ build_context_dest }}/{{ item.path | regex_replace('\\.j2$', '') }}"
+    mode: "{{ item.mode }}"
+  with_community.general.filetree: "{{ build_context_src }}"
+  when: item.state == "file" and (item.path | regex_search('\\.j2$'))
+  notify:
+    - "Remove previous sandbox build ({{ image_name }})"
+
+- name: Generate the definition file
+  ansible.builtin.template:
+    src: "{{ definition_src }}"
+    dest: "{{ definition_dest }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - "Archive generated image definition ({{ image_name }})"
+
+- name: Check for force flag
+  ansible.builtin.debug:
+    msg: "Forcing build handlers to run due to force variable"
+  when: force | bool
+  changed_when: true
+  notify:
+    - "Remove previous sandbox build ({{ image_name }})"
+
+# Flush so that each image's chain completes before the next image (which may build FROM this one) starts.
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers

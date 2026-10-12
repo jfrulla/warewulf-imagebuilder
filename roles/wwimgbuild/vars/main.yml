@@ -1,0 +1,7 @@
+---
+definition_src: "{{ definition_src_dir }}/{{ image_name }}.def.j2"    # Must be a Jinja template
+definition_dest: "{{ definition_dest_dir }}/{{ image_name }}.def"
+build_context_src: "{{ build_context_src_dir }}/{{ image_name }}"
+build_context_dest: "{{ build_context_dest_dir }}/{{ image_name }}"     # Referenced by the definitions in %files
+sandbox_dest: "{{ sandbox_build_dir }}/{{ image_name }}"
+archive_dest: "{{ archive_dir }}/{{ image_name }}.def_{{ ansible_date_time.iso8601_basic_short }}"

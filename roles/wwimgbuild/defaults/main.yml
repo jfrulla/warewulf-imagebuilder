@@ -1,0 +1,25 @@
+---
+# Short image name (base, user, login, ...). Set by the playbook via loop_var.
+# This is also the name of the resulting Warewulf image and of the node profile it is assigned to.
+image_name: ""
+
+# Flag to force the entire build process even if no changes were made to the definition or build context
+force: false
+
+# Directory where Apptainer sandboxes are built
+sandbox_build_dir: "/var/lib/warewulf/sandboxes"
+
+# Directory the Apptainer definition templates are read from (inside the role)
+definition_src_dir: "{{ role_path }}/templates/{{ warewulf_cluster_name }}/definitions"
+
+# Directory where the rendered Apptainer definitions are stored (target side)
+definition_dest_dir: "/etc/warewulf/definitions"
+
+# Directory the build-time files are read from (inside the role)
+build_context_src_dir: "{{ role_path }}/files/build-context/{{ warewulf_cluster_name }}"
+
+# Directory the build-time files are copied to (target side). The definitions reference this path.
+build_context_dest_dir: "/var/tmp/build-context"
+
+# Directory where previously rendered definitions are archived (one copy per build)
+archive_dir: "/var/lib/warewulf/definition-archive"

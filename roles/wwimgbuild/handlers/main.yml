@@ -1,0 +1,48 @@
+---
+# The build pipeline is a chain of handlers. Tasks only stage files and notify;
+# each handler notifies the next step. ansible.cfg must set force_handlers=True
+# so a failure mid-chain does not leave notified handlers pending.
+
+- name: "Archive generated image definition ({{ image_name }})"
+  ansible.builtin.copy:
+    remote_src: true
+    src: "{{ definition_dest }}"
+    dest: "{{ archive_dest }}"
+    mode: "0644"
+  notify:
+    - "Remove previous sandbox build ({{ image_name }})"
+
+- name: "Remove previous sandbox build ({{ image_name }})"
+  ansible.builtin.file:
+    path: "{{ sandbox_dest }}"
+    state: absent
+  changed_when: true
+  notify:
+    - "Build image sandbox ({{ image_name }})"
+
+- name: "Build image sandbox ({{ image_name }})"
+  ansible.builtin.command: "apptainer build --sandbox --force {{ sandbox_dest }} {{ definition_dest }}"
+  changed_when: true
+  notify:
+    - "Import image sandbox into Warewulf ({{ image_name }})"
+
+- name: "Import image sandbox into Warewulf ({{ image_name }})"
+  ansible.builtin.command: "wwctl image import --force {{ sandbox_dest }} {{ image_name }}"
+  changed_when: true
+  notify:
+    - "Build image VNFS ({{ image_name }})"
+
+- name: "Build image VNFS ({{ image_name }})"
+  ansible.builtin.command: "wwctl image build --force {{ image_name }}"
+  changed_when: true
+  notify:
+    - "Ensure image is set in node profile ({{ image_name }})"
+    - Build Warewulf overlays
+
+- name: "Ensure image is set in node profile ({{ image_name }})"
+  ansible.builtin.command: "wwctl profile set -y --image {{ image_name }} {{ image_name }}"
+  changed_when: true
+
+- name: Build Warewulf overlays
+  ansible.builtin.command: "wwctl overlay build"
+  changed_when: true

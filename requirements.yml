@@ -1,0 +1,5 @@
+---
+# community.general provides the filetree lookup used to stage the build context.
+collections:
+  - name: community.general
+    version: ">=10.0.0"

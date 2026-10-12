@@ -1,0 +1,118 @@
+Bootstrap: dnf
+MirrorURL: {{ rocky_mirror_url }}
+Include: dnf
+
+%labels
+    org.opencontainers.image.title="Rocky {{ rocky_version }} Warewulf base"
+    org.opencontainers.image.description="Bootable base image shared by all {{ warewulf_cluster_name }} cluster nodes"
+    org.opencontainers.image.authors="{{ image_maintainer }}"
+
+%environment
+    export container=oci
+
+%files
+    {{ build_context_dest }}/dracut-reboot.sh /usr/lib/dracut/modules.d/99dracut-reboot/
+    {{ build_context_dest }}/module-setup.sh /usr/lib/dracut/modules.d/99dracut-reboot/
+    {{ build_context_dest }}/set-timezone.service /etc/systemd/system/
+
+%post
+    dnf -y install epel-release
+    dnf clean all
+
+{% if kernel_version %}
+    # Install kernel-{{ kernel_version }} plus related packages, and versionlock it
+    dnf -y --allowerasing install kernel*{{ kernel_version }}*
+    dnf -y remove kernel-debug*
+    dnf -y install python3-dnf-plugin-versionlock
+    dnf versionlock add kernel*
+{% else %}
+    # No kernel pin set (kernel_version is empty): install the current kernel from the mirror
+    dnf -y --allowerasing install kernel kernel-core kernel-modules kernel-modules-extra kernel-devel
+{% endif %}
+
+    # Core OS
+    dnf -y --allowerasing groupinstall "Core"
+
+    # Common packages for every node type
+    dnf -y --allowerasing install \
+        bash-completion \
+        bind-utils \
+        chrony \
+        cronie \
+        dnf-utils \
+        ethtool \
+        git \
+        htop \
+        ipmitool \
+        iproute \
+        iputils \
+        jq \
+        less \
+        lsof \
+        NetworkManager \
+        nfs-utils \
+        numactl \
+        openssh-clients \
+        openssh-server \
+        pciutils \
+        pdsh \
+        psmisc \
+        python3 \
+        python3-pip \
+        rsync \
+        rsyslog \
+        screen \
+        strace \
+        sudo \
+        tar \
+        tmux \
+        tuned \
+        vim-enhanced \
+        wget \
+        which \
+        xfsprogs
+
+    # Warewulf's dracut module makes the image bootable over the network
+    dnf -y install {{ warewulf_dracut_rpm_url }}
+
+    # Remove wireless firmware and bring everything up to date
+    dnf -y remove iwl*
+    dnf -y update
+
+    # Disable SELinux
+    sed -i -E 's/^(SELINUX=).*/\1disabled/' /etc/selinux/config
+
+    # Enable services
+    systemctl enable \
+        chronyd \
+        set-timezone \
+        sshd
+
+    # Disable the firstboot prompt and kdump
+    systemctl mask systemd-firstboot
+    systemctl disable kdump
+
+    # Clean up
+    dnf clean all
+    rm -f /etc/machine-id /var/lib/dbus/machine-id
+
+    # Set root password (hash comes from the vault; "!" keeps the account locked)
+    usermod -p '{{ node_root_password_hash }}' root
+
+    # Regenerate /etc/shadow to ensure service accounts function properly
+    pwconv
+
+    # Use dracut to generate the initramfs with the Warewulf module
+    cd /
+    dracut --force --no-hostonly --add wwinit --regenerate-all
+
+%help
+    Rocky Linux {{ rocky_version }} - Bootable Warewulf base image for the {{ warewulf_cluster_name }} cluster
+
+    Build:   sudo apptainer build --sandbox /path/to/sandbox base.def
+    Import:  sudo wwctl image import /path/to/sandbox base
+
+    The above steps are performed automatically by the wwimgbuild Ansible role.
+
+    The kernel and node-specific files are provided to the booted image separately
+    via Warewulf overlays and other Warewulf processes.

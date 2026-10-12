@@ -1,0 +1,5 @@
+#!/bin/bash
+{{ ansible_managed }}
+# Cap the aggregate resources of all interactive user sessions on this login node
+systemctl set-property user.slice MemoryMax={{ login_user_slice_memory_max }}
+systemctl set-property user.slice CPUQuota={{ login_user_slice_cpu_quota }}

@@ -1,0 +1,27 @@
+---
+galaxy_info:
+  author: "University of Washington Research Computing Systems Engineering Team (Jake Frulla, Gabe Nguyen, Michael Wanek)"
+  description: "Builds Warewulf node images from Apptainer definitions and assigns each to its node profile"
+  company: "University of Washington"
+
+  license: MIT
+
+  min_ansible_version: "2.15"
+
+  platforms:
+    - name: Rocky
+      versions:
+        - all
+
+  galaxy_tags:
+    - hpc
+    - warewulf
+    - apptainer
+    - nodes
+    - images
+    - container
+    - sandbox
+    - provisioning
+    - cluster
+
+dependencies: []

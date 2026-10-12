@@ -1,0 +1,10 @@
+[Unit]
+Description=Set user.slice limits
+After=dbus.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/user-slice-limit.sh
+
+[Install]
+WantedBy=multi-user.target

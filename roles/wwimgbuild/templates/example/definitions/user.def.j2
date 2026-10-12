@@ -1,0 +1,52 @@
+Bootstrap: localimage
+From: {{ sandbox_build_dir }}/base
+
+%labels
+    org.opencontainers.image.title="Rocky {{ rocky_version }} Warewulf user"
+    org.opencontainers.image.description="Intermediate image with the user-facing baseline for {{ warewulf_cluster_name }} login/compute nodes"
+    org.opencontainers.image.authors="{{ image_maintainer }}"
+
+%environment
+    export container=oci
+
+%files
+    {{ build_context_dest }}/cluster-env.sh /etc/profile.d/
+
+%post
+    # Slurm client and munge. EPEL packages are used here for simplicity; production
+    # sites normally install Slurm builds that match their controller from a local repo.
+    dnf -y --allowerasing install \
+        munge \
+        slurm \
+        slurm-slurmd \
+        slurm-pam_slurm \
+        slurm-contribs \
+        slurm-perlapi
+
+    # User-facing tooling
+    dnf -y --allowerasing install \
+        apptainer \
+        Lmod \
+        git-lfs \
+        rclone \
+        nano \
+        zsh \
+        valgrind
+
+    # Enable services
+    systemctl enable munge
+
+    # Clean up
+    dnf clean all
+
+    # Regenerate the initramfs so it matches the final image contents
+    cd /
+    dracut --force --no-hostonly --add wwinit --regenerate-all
+
+%help
+    Rocky Linux {{ rocky_version }} - Intermediate image with a user-facing baseline for {{ warewulf_cluster_name }} nodes
+
+    Build:   sudo apptainer build --sandbox /path/to/sandbox user.def
+    Import:  sudo wwctl image import /path/to/sandbox user
+
+    The above steps are performed automatically by the wwimgbuild Ansible role.

@@ -1,0 +1,17 @@
+---
+# Builds a cluster's Warewulf node images.
+- name: Deploy node images
+  hosts: head
+  tags: always
+  tasks:
+    - name: Build the images selected by tags
+      ansible.builtin.include_role:
+        name: wwimgbuild
+        apply:
+          tags: always
+      loop: "{{ warewulf_images }}"
+      loop_control:
+        loop_var: image_name
+      when:
+        - "'all' in ansible_run_tags or image_name in ansible_run_tags"
+        - image_name not in ansible_skip_tags

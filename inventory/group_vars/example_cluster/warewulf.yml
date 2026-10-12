@@ -1,0 +1,12 @@
+---
+# Selects the per-cluster source trees
+warewulf_cluster_name: "example"
+
+# Node images built for this cluster
+warewulf_images:
+  - base
+  - user
+  - login
+
+# Where previously rendered definition files are archived
+archive_dir: "/var/lib/warewulf/definition-archive"

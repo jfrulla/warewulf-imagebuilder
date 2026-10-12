@@ -1,0 +1,10 @@
+[project]
+name = "warewulf-imagebuilder"
+version = "0.1.0"
+description = "Ansible environment for the Warewulf image build pipeline example"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "ansible-core>=2.15.13",
+    "ansible-lint>=6.8.7",
+]

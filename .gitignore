@@ -1,0 +1,14 @@
+.DS_Store
+.vscode
+
+# Python dev env files
+.venv
+uv.lock
+
+# Ansible specific files
+*.retry
+collections/
+ansible.log
+
+# Never commit a vault key
+*.key

@@ -1,0 +1,12 @@
+{{ ansible_managed }}
+
+[Unit]
+Description=Set the timezone on boot
+After=dbus.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/timedatectl set-timezone {{ cluster_timezone }}
+
+[Install]
+WantedBy=multi-user.target
